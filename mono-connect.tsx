@@ -1,6 +1,7 @@
 import React from 'react';
-import {SafeAreaView, Modal, View, Text, StyleSheet, TouchableOpacity, ActivityIndicator} from 'react-native';
+import { SafeAreaView, Modal, View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { WebView } from 'react-native-webview';
+import Loader from './loader';
 import { MonoConnectProps, WebviewMessage, MonoEventData } from './types';
 import { createUrl } from './utils';
 
@@ -25,11 +26,11 @@ const MonoConnect: React.FC<MonoConnectProps> = (props) => {
 
     const eventData: MonoEventData = response.data;
 
-    switch(response.type) {
+    switch (response.type) {
       /* Old callbacks */
       case "mono.connect.widget.account_linked":
         const data = response.data;
-        onSuccess({...data, getAuthCode: () => data.code});
+        onSuccess({ ...data, getAuthCode: () => data.code });
         if (onEvent) onEvent('SUCCESS', eventData);
         setOpenWidget(false);
         break;
@@ -76,11 +77,11 @@ const MonoConnect: React.FC<MonoConnectProps> = (props) => {
         <Text style={styles.errorMessage}>
           {name}: Something went wrong. Try again.
         </Text>
-        <View style={{marginTop: 5}}>
+        <View style={{ marginTop: 5 }}>
           <TouchableOpacity
             style={styles.btn}
             onPress={() => setOpenWidget(false)}>
-              <Text>Close</Text>
+            <Text>Close</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -88,6 +89,8 @@ const MonoConnect: React.FC<MonoConnectProps> = (props) => {
   }
 
   const INJECTED_JAVASCRIPT = `window.MonoClientInterface = window.ReactNativeWebView;`;
+
+  const { setOpenWidget } = otherConfig;
 
   return (
     <Modal
@@ -102,7 +105,7 @@ const MonoConnect: React.FC<MonoConnectProps> = (props) => {
           source={{ uri: connect_url }}
           onMessage={(e: any) => handleMessage(e.nativeEvent.data)}
           startInLoadingState={true}
-          renderLoading={() => <View style={{display: "flex", justifyContent: "center", alignItems: "center", backgroundColor: "white", height: "100%"}}><ActivityIndicator size="small" color="#182CD1"/></View>}
+          renderLoading={() => <Loader close={() => setOpenWidget(false)} />}
           renderError={(e) => <RenderError name={e} />}
         />
       </SafeAreaView>
